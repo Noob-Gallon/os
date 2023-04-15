@@ -1,8 +1,8 @@
 import json
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
-from scheduler import FCFS
-from process import Process
+from Scheduler import FCFS
+from Process import Process
 
 ##################################################################
 ###                        execution                           ###

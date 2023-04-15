@@ -1,6 +1,6 @@
 import json
-from scheduler import PSJF
-from process import Process
+from Scheduler import PSJF
+from Process import Process
 
 
 ##################################################################

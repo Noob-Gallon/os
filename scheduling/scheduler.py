@@ -194,8 +194,6 @@ class FCFS(Scheduler):
 class SJF(Scheduler):
 
     @override(Scheduler)
-    # Use the 'override' decorator to modify the method so that it returns a boolean value
-    # that determines whether the 'readyQueue' should be sorted or not.
     def checkNewProcessArrival(self):
         newProcessAdded = False
 
@@ -221,7 +219,6 @@ class SJF(Scheduler):
         # Assume that at least one process arrives at unit time 0.
         if (self.checkNewProcessArrival() == True):
             # Sort the readyQueue to pick out the shortest process.
-            print("check 1")
             self.sortByBurstTimeAsc()
 
         # If readyQueue is not empty, keep schedule the processes.
@@ -302,7 +299,6 @@ class PSJF(SJF):
 
             # Keep runs the scheduling until the job of a process is done.
             while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
-                print(self.readyQueue[0].burstTime)
 
                 # plus 1 to the unitTime.
                 # unitTime presents the totla running time to date.
