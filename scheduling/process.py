@@ -20,33 +20,35 @@ class Process:
     # For process that is executing,
     # increase the runningTime.
     def runningTick(self):
-        if (self.isRunning == False):
-            return
-
         # Append the timeSection for displaying gantt-chart.
         self.runningTime += 1
 
     # For processes that are waiting in the readyQueue,
     # increase the waitingTime.
     def waitingTick(self):
-        if (self.isRunning == True):
-            return
-
         self.waitingTime += 1
 
     # Make this process to be executed on CPU.
     # Note that he calculating manner of responseTime could be changed
     # for preemptive scheduling algorithms.
-    def startRunning(self):
+    def startProcess(self):
         if (self.isRunning == True):
             return
 
         self.isRunning = True
         self.responseTime = self.waitingTime
 
+    # Stop
+    def pauseProcess(self, timeSection):
+        if (self.isRunning == False):
+            return
+
+        self.executedTimeSection.append(timeSection)
+        self.isRunning = False
+
     # Make this process to be terminated.
     # Calculate the turnAroundTime.
-    def stopRunning(self, timeSection):
+    def terminateProcess(self, timeSection):
         if (self.isRunning == False):
             return
 

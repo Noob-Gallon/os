@@ -1,5 +1,6 @@
 from functools import wraps
 from matplotlib import cm
+from abc import *  # import to implement interface(abstract class)
 import matplotlib.pyplot as plt
 
 
@@ -31,8 +32,13 @@ class Scheduler:
         self.currentUnitTime = 0
 
     # Add processes into readyQueue of FCFS from JSON file.
-    def addProcess(self, process):
-        self.processList.append(process)
+    def addProcesses(self, processes):
+        self.processList = processes
+
+        # Sort the readyQueue according to the burstTime in ascending order
+        # to find the matching processes on every unit time.
+        self.readyQueue = sorted(
+            self.readyQueue, key=lambda process: process.burstTime)
 
     def increaseUnitTime(self):
         self.currentUnitTime += 1
@@ -67,7 +73,7 @@ class Scheduler:
         yticks = [0.5 + i for i in range(len(self.terminatedQueue))]
         yticksLabels = []
         for index in range(len(self.terminatedQueue)):
-            processName = "Process " + str(index)
+            processName = "Process " + str(index+1)
             yticksLabels.append(processName)
 
         ax.set_xticks(range((self.currentUnitTime)+1))
@@ -146,7 +152,7 @@ class FCFS(Scheduler):
         # current unit time is 0.
 
         ##############################################################
-        # I assume that at least there one process arrives at first. #
+        # I assume that at least one process arrives at unit time 0. #
         ##############################################################
         # If not, I must use infinity loop to check the process arrival.
         # It's an example assignment, so I made a rule.
@@ -155,7 +161,7 @@ class FCFS(Scheduler):
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
             # The process located in the first of the readyQueue begins running in CPU(scheduling).
-            self.readyQueue[0].startRunning()
+            self.readyQueue[0].startProcess()
             startedTime = self.currentUnitTime
 
             # Keep runs the scheduling until the job of a process is done.
@@ -167,9 +173,9 @@ class FCFS(Scheduler):
                 self.increaseUnitTime()
 
                 for process in self.readyQueue:
-                    process.runningTick()
-
-                    if (process.isRunning == False):
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
                         process.waitingTick()
 
                 # UnitTime is increased, so check the new arrival of process again.
@@ -179,7 +185,7 @@ class FCFS(Scheduler):
 
             # The scheduling of a process is done.
             # Deque the process that is recently scheduled into terminated queue.
-            self.readyQueue[0].stopRunning(
+            self.readyQueue[0].terminateProcess(
                 (startedTime, self.currentUnitTime-startedTime))
             terminatedProcess = self.readyQueue.pop(0)
             self.terminatedQueue.append(terminatedProcess)
@@ -191,26 +197,99 @@ class SJF(Scheduler):
     # Use the 'override' decorator to modify the method so that it returns a boolean value
     # that determines whether the 'readyQueue' should be sorted or not.
     def checkNewProcessArrival(self):
-        flag = False
+        newProcessAdded = False
 
         for newProcess in self.processList:
             if (newProcess.arrivalTime == self.currentUnitTime):
                 self.readyQueue.append(newProcess)
-                flag = True
+                newProcessAdded = True
 
-        return flag
+        return newProcessAdded
 
-    # Sort the Processes list according to burst time in ascending order.
+    # Sort the Processes list according to the burst time in ascending order.
     def sortByBurstTimeAsc(self):
         self.readyQueue = sorted(
             self.readyQueue, key=lambda process: process.burstTime)
 
     # SJF
     def startScheduling(self):
-        arrivalFlag = False
+
+        newProcessAdded = False
 
         # Check the process arrival before executing the scheduling.
         # current unit time is 0.
+        # Assume that at least one process arrives at unit time 0.
+        if (self.checkNewProcessArrival() == True):
+            # Sort the readyQueue to pick out the shortest process.
+            print("check 1")
+            self.sortByBurstTimeAsc()
+
+        # If readyQueue is not empty, keep schedule the processes.
+        while (len(self.readyQueue)):
+            # The process located in the first of the readyQueue begins running in CPU(scheduling).
+            self.readyQueue[0].startProcess()
+            startedTime = self.currentUnitTime
+
+            # Keep runs the scheduling until the job of a process is done.
+            while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
+
+                # plus 1 to the unitTime.
+                # unitTime presents the totla running time to date.
+                self.increaseUnitTime()
+
+                for process in self.readyQueue:
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
+                        process.waitingTick()
+
+                # Check for new process arrivals.
+                if (self.checkNewProcessArrival() == True):
+                    newProcessAdded = True
+
+            # The scheduling of a process is done.
+            # Deque the process that is recently scheduled into terminated queue.
+            self.readyQueue[0].terminateProcess(
+                (startedTime, self.currentUnitTime-startedTime))
+            terminatedProcess = self.readyQueue.pop(0)
+            self.terminatedQueue.append(terminatedProcess)
+
+            if (newProcessAdded == True):
+                self.sortByBurstTimeAsc()
+                newProcessAdded = False
+
+
+class PSJF(SJF):
+    # Preemptive Shortest Job First
+    # A Shortest Job can preempt the CPU from the executing Job.
+
+    # @override(Scheduler)
+    # # Use the 'override' decorator to modify the method so that it returns a boolean value
+    # # that determines whether the 'readyQueue' should be sorted or not.
+    # def checkNewProcessArrival(self):
+    #     newProcessAdded = False
+
+    #     for newProcess in self.processList:
+    #         if (newProcess.arrivalTime == self.currentUnitTime):
+    #             self.readyQueue.append(newProcess)
+    #             newProcessAdded = True
+
+    #     return newProcessAdded
+
+    # # Sort the Processes list according to the burst time in ascending order.
+    # def sortByBurstTimeAsc(self):
+    #     self.readyQueue = sorted(
+    #         self.readyQueue, key=lambda process: process.burstTime)
+
+    # SJF
+    @override(SJF)
+    def startScheduling(self):
+
+        newProcessAdded = False
+
+        # Check the process arrival before executing the scheduling.
+        # current unit time is 0.
+        # Assume that at least one process arrives at unit time 0.
         if (self.checkNewProcessArrival() == True):
             # Sort the readyQueue to pick out the shortest process.
             self.sortByBurstTimeAsc()
@@ -218,33 +297,50 @@ class SJF(Scheduler):
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
             # The process located in the first of the readyQueue begins running in CPU(scheduling).
-            self.readyQueue[0].startRunning()
+            self.readyQueue[0].startProcess()
+            startedTime = self.currentUnitTime
 
             # Keep runs the scheduling until the job of a process is done.
             while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
-                for process in self.readyQueue:
-                    process.runningTick()
-
-                    if (process.isRunning == False):
-                        process.waitingTick()
+                print(self.readyQueue[0].burstTime)
 
                 # plus 1 to the unitTime.
                 # unitTime presents the totla running time to date.
                 self.increaseUnitTime()
 
+                for process in self.readyQueue:
+
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
+                        process.waitingTick()
+
                 # Check for new process arrivals.
                 # If any new process has arrived, sort the readyQueue again according to the burstTime.
-                # 문제 발생, 여기서 정렬해버리면 preemptive가 된다.
-                # 이걸 약간 수정해서 끝나면 바뀌도록 해야할 듯.
                 if (self.checkNewProcessArrival() == True):
-                    arrivalFlag = True
+                    # tick을 한 번 했는데 새로운 프로세스가 도착한 경우.
+                    # Preemptive이기 때문에, 현재 실행 중인 것과 비교해서
+                    # 실행 순서를 교체해야 한다.
+                    readyQueueLastIndex = len(self.readyQueue)-1
+                    if (self.readyQueue[readyQueueLastIndex].burstTime < self.readyQueue[0].burstTime):
+                        # The scheduling of a process is done.
+                        # Deque the process that is recently scheduled into terminated queue.
 
-            # The scheduling of a process is done.
-            # Deque the process that is recently scheduled into terminated queue.
-            self.readyQueue[0].stopRunning()
+                        # Swap two Processes
+                        temp = self.readyQueue[0]
+                        self.readyQueue[0] = self.readyQueue[readyQueueLastIndex]
+                        self.readyQueue[readyQueueLastIndex] = temp
+
+                        # 스왑이 됐으므로, 실행되는 것이 바뀐다.
+                        # 기존에 실행되던 것에 대해서 실행 시각을 저장,
+                        # 새로운 것에도 추가되어야 하기 때문에 startedTime을 currentUnitTime으로 초기화한다.
+                        self.readyQueue[readyQueueLastIndex].pauseProcess(
+                            (startedTime, self.currentUnitTime - startedTime))
+                        startedTime = self.currentUnitTime
+                        self.readyQueue[0].startProcess()
+
+            self.readyQueue[0].terminateProcess(
+                (startedTime, self.currentUnitTime-startedTime))
             terminatedProcess = self.readyQueue.pop(0)
             self.terminatedQueue.append(terminatedProcess)
-
-            if (arrivalFlag == True):
-                self.sortByBurstTimeAsc()
-                arrivalFlag = False
+            self.sortByBurstTimeAsc()
