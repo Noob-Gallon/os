@@ -2,8 +2,8 @@
 import json
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
-from scheduling.Scheduler import *
-from Process import Process
+from classes.Scheduler import *
+from classes.Process import Process
 
 ##################################################################
 ###                        execution                           ###
@@ -18,7 +18,9 @@ psjf = PSJF()
 # 문제 발견
 # 동시에 p를 주면 오류가 발생함
 # 이것은 deep copy와 shallow copy에 관련있는 것으로 보임.
-# 조금 더 생각해 보아야 할 듯.
+# 같은 p를 전달해 주면 deep copy가 되고,
+# 이 때문에 process에 대하여 처리해주는 것이
+# 겹치게 되어 동작에 오류가 발생하는 것으로 생각됨.
 p = []
 p.append(Process(7, 0))
 p.append(Process(2, 1))

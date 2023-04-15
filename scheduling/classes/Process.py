@@ -3,9 +3,10 @@ class Process:
     # Process that will be scheduled.
     # It contains the process scheduling information.
 
-    def __init__(self, burstTime, arrivalTime):
+    def __init__(self, burstTime, arrivalTime, priority):
         self.burstTime = burstTime
         self.arrivalTime = arrivalTime
+        self.priority = priority
 
         self.executedTimeSection = []
 
@@ -27,6 +28,9 @@ class Process:
     # increase the waitingTime.
     def waitingTick(self):
         self.waitingTime += 1
+
+    def getRemainingTime(self):
+        return self.burstTime - self.runningTime
 
     # Make this process to be executed on CPU.
     # Note that he calculating manner of responseTime could be changed

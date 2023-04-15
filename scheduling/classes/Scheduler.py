@@ -26,6 +26,7 @@ class Scheduler:
     # Each process class means the job need to be executed.
 
     def __init__(self):
+        # processList는 새로운 프로세스의 도착을 확인하기 위하여 도입되었음.
         self.processList = []
         self.readyQueue = []
         self.terminatedQueue = []
@@ -63,6 +64,8 @@ class Scheduler:
         yrange = 0
 
         for process in self.terminatedQueue:
+            print("process.executedTimeSection : ",
+                  process.executedTimeSection)
             ax.broken_barh(xranges=process.executedTimeSection, yrange=(yrange+0.1, 0.8),
                            facecolors=(colors[yrange]))
             yrange += 1
@@ -160,7 +163,7 @@ class FCFS(Scheduler):
 
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
-            # The process located in the first of the readyQueue begins running in CPU(scheduling).
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
             self.readyQueue[0].startProcess()
             startedTime = self.currentUnitTime
 
@@ -223,7 +226,7 @@ class SJF(Scheduler):
 
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
-            # The process located in the first of the readyQueue begins running in CPU(scheduling).
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
             self.readyQueue[0].startProcess()
             startedTime = self.currentUnitTime
 
@@ -231,7 +234,7 @@ class SJF(Scheduler):
             while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
 
                 # plus 1 to the unitTime.
-                # unitTime presents the totla running time to date.
+                # unitTime presents the total running time to date.
                 self.increaseUnitTime()
 
                 for process in self.readyQueue:
@@ -260,29 +263,9 @@ class PSJF(SJF):
     # Preemptive Shortest Job First
     # A Shortest Job can preempt the CPU from the executing Job.
 
-    # @override(Scheduler)
-    # # Use the 'override' decorator to modify the method so that it returns a boolean value
-    # # that determines whether the 'readyQueue' should be sorted or not.
-    # def checkNewProcessArrival(self):
-    #     newProcessAdded = False
-
-    #     for newProcess in self.processList:
-    #         if (newProcess.arrivalTime == self.currentUnitTime):
-    #             self.readyQueue.append(newProcess)
-    #             newProcessAdded = True
-
-    #     return newProcessAdded
-
-    # # Sort the Processes list according to the burst time in ascending order.
-    # def sortByBurstTimeAsc(self):
-    #     self.readyQueue = sorted(
-    #         self.readyQueue, key=lambda process: process.burstTime)
-
     # SJF
     @override(SJF)
     def startScheduling(self):
-
-        newProcessAdded = False
 
         # Check the process arrival before executing the scheduling.
         # current unit time is 0.
@@ -293,7 +276,7 @@ class PSJF(SJF):
 
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
-            # The process located in the first of the readyQueue begins running in CPU(scheduling).
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
             self.readyQueue[0].startProcess()
             startedTime = self.currentUnitTime
 
@@ -301,11 +284,10 @@ class PSJF(SJF):
             while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
 
                 # plus 1 to the unitTime.
-                # unitTime presents the totla running time to date.
+                # unitTime presents the total running time to date.
                 self.increaseUnitTime()
 
                 for process in self.readyQueue:
-
                     if (process.isRunning == True):
                         process.runningTick()
                     else:
@@ -340,3 +322,201 @@ class PSJF(SJF):
             terminatedProcess = self.readyQueue.pop(0)
             self.terminatedQueue.append(terminatedProcess)
             self.sortByBurstTimeAsc()
+
+
+class SRTF(Scheduler):
+    # Shortest Remaining Time First
+    # Thus, scheduling is proceeded according to the remaining time of processes.
+
+    # FCFS가 아닌 것들은 모두 추가가 되었는지 아닌지를 체크하게 되는데,
+    # 그 이유는 모두 조건이 새롭게 생기기 때문에...
+    @override(Scheduler)
+    def checkNewProcessArrival(self):
+        newProcessAdded = False
+
+        for newProcess in self.processList:
+            # Add a new arrived process on currentUnitTime into readyQueue.
+            if (newProcess.arrivalTime == self.currentUnitTime):
+                self.readyQueue.append(newProcess)
+                newProcessAdded = True
+
+        return newProcessAdded
+
+    # Sort the processes according to the remaining time.
+    def sortByRemainingTimeAsc(self):
+        self.readyQueue = sorted(
+            self.readyQueue, key=lambda process: (process.getRemainingTime()))
+
+    # SRTF
+    def startScheduling(self):
+
+        newProcessAdded = False
+
+        # Check the process arrival before executing the scheduling.
+        # current unit time is 0.
+        # Assume that at least one process arrives at unit time 0.
+        if (self.checkNewProcessArrival() == True):
+            # Sort the readyQueue to pick out the process that has shortese remaining time.
+            self.sortByRemainingTimeAsc()
+
+        # If readyQueue is not empty, keep schedule the processes.
+        while (len(self.readyQueue)):
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
+            self.readyQueue[0].startProcess()
+            startedTime = self.currentUnitTime
+
+            # Keep runs the scheduling until the job of a process is done.
+            while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
+
+                # plus 1 to the unitTime.
+                # unitTime presents the total running time to date.
+                self.increaseUnitTime()
+
+                for process in self.readyQueue:
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
+                        process.waitingTick()
+
+                # Check for new process arrivals.
+                if (self.checkNewProcessArrival() == True):
+                    newProcessAdded = True
+
+            # The scheduling of a process is done.
+            # Deque the process that is recently scheduled into terminated queue.
+            self.readyQueue[0].terminateProcess(
+                (startedTime, self.currentUnitTime-startedTime))
+            terminatedProcess = self.readyQueue.pop(0)
+            self.terminatedQueue.append(terminatedProcess)
+
+            if (newProcessAdded == True):
+                self.sortByRemainingTimeAsc()
+                newProcessAdded = False
+
+
+class PSRTF(SRTF):
+    # Preemptive Shortest Remaining Time First
+    # Thus, scheduling is proceeded according to the remaining time of processes
+    # and a process could be preempted by other processes.
+
+    # SRTF
+    @override(SRTF)
+    def startScheduling(self):
+
+        # Check the process arrival before executing the scheduling.
+        # current unit time is 0.
+        # Assume that at least one process arrives at unit time 0.
+        if (self.checkNewProcessArrival() == True):
+            # Sort the readyQueue to pick out the process that has shortese remaining time.
+            self.sortByRemainingTimeAsc()
+
+        # If readyQueue is not empty, keep schedule the processes.
+        while (len(self.readyQueue)):
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
+            self.readyQueue[0].startProcess()
+            startedTime = self.currentUnitTime
+
+            # Keep runs the scheduling until the job of a process is done.
+            while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
+
+                # plus 1 to the unitTime.
+                # unitTime presents the total running time to date.
+                self.increaseUnitTime()
+
+                for process in self.readyQueue:
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
+                        process.waitingTick()
+
+                # Check for new process arrivals.
+                if (self.checkNewProcessArrival() == True):
+
+                    readyQueueLastIndex = len(self.readyQueue)-1
+                    if (self.readyQueue[readyQueueLastIndex].getRemainingTime() < self.readyQueue[0].getRemainingTime()):
+                        # Swap two Processes
+
+                        temp = self.readyQueue[0]
+                        self.readyQueue[0] = self.readyQueue[readyQueueLastIndex]
+                        self.readyQueue[readyQueueLastIndex] = temp
+
+                        self.readyQueue[readyQueueLastIndex].pauseProcess(
+                            (startedTime, self.currentUnitTime - startedTime))
+                        startedTime = self.currentUnitTime
+                        self.readyQueue[0].startProcess()
+
+            # The scheduling of a process is done.
+            # Deque the process that is recently scheduled into terminated queue.
+            self.readyQueue[0].terminateProcess(
+                (startedTime, self.currentUnitTime-startedTime))
+            terminatedProcess = self.readyQueue.pop(0)
+            self.terminatedQueue.append(terminatedProcess)
+            self.sortByRemainingTimeAsc()
+
+
+class Priority(Scheduler):
+
+    # Assume that the smaller the number, the higher the priority.
+    def sortByPriorityAsc(self):
+        self.readyQueue = sorted(
+            self.readyQueue, key=lambda process: (process.priority))
+
+    def startScheduling(self):
+
+        # Check the process arrival before executing the scheduling.
+        # current unit time is 0.
+        # Assume that at least one process arrives at unit time 0.
+        if (self.checkNewProcessArrival() == True):
+            # Sort the readyQueue to pick out the process that has shortese remaining time.
+            self.sortByRemainingTimeAsc()
+
+        # If readyQueue is not empty, keep schedule the processes.
+        while (len(self.readyQueue)):
+            # The process located at the first of the readyQueue begins running in CPU(scheduling).
+            self.readyQueue[0].startProcess()
+            startedTime = self.currentUnitTime
+
+            # Keep runs the scheduling until the job of a process is done.
+            while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
+
+                # plus 1 to the unitTime.
+                # unitTime presents the total running time to date.
+                self.increaseUnitTime()
+
+                for process in self.readyQueue:
+                    if (process.isRunning == True):
+                        process.runningTick()
+                    else:
+                        # Low priority processes may never execute,
+                        # so there need to be Aging on Priority Scheduling.
+                        # So, implement 'Aging'.
+                        # on every waitingTick, decrease the priority of the processes.
+                        process.waitingTick()
+                        process.priority -= 1
+
+                # Check for new process arrivals.
+                if (self.checkNewProcessArrival() == True):
+
+                    readyQueueLastIndex = len(self.readyQueue)-1
+                    if (self.readyQueue[readyQueueLastIndex].priority < self.readyQueue[0].priority):
+                        # Swap two Processes
+
+                        temp = self.readyQueue[0]
+                        self.readyQueue[0] = self.readyQueue[readyQueueLastIndex]
+                        self.readyQueue[readyQueueLastIndex] = temp
+
+                        self.readyQueue[readyQueueLastIndex].pauseProcess(
+                            (startedTime, self.currentUnitTime - startedTime))
+                        startedTime = self.currentUnitTime
+                        self.readyQueue[0].startProcess()
+
+            # The scheduling of a process is done.
+            # Deque the process that is recently scheduled into terminated queue.
+            self.readyQueue[0].terminateProcess(
+                (startedTime, self.currentUnitTime-startedTime))
+            terminatedProcess = self.readyQueue.pop(0)
+            self.terminatedQueue.append(terminatedProcess)
+            self.sortByPriorityAsc()
+
+
+# class RoundRobin():
