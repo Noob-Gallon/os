@@ -1,4 +1,6 @@
 import json
+import plotly.figure_factory as ff
+import plotly.graph_objs as go
 from scheduler import FCFS
 from process import Process
 
@@ -7,12 +9,13 @@ from process import Process
 ##################################################################
 
 # Make a instance of FCFS
+# 나중에 json으로 바꿔야 함.
 fcfs = FCFS()
 
 p = []
 p.append(Process(6, 0))
 p.append(Process(8, 0))
-p.append(Process(7, 17))
+p.append(Process(7, 0))
 p.append(Process(3, 0))
 
 # First, Insert the processes inforamtion in the scheduler.
@@ -21,6 +24,7 @@ for process in p:
     fcfs.addProcess(process)
 
 fcfs.startScheduling()
-# fcfs.printResult()
-
 fcfs.printEvaulation()
+fcfs.displayGanttChart()
+
+# fcfs.printResult()

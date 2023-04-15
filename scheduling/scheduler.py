@@ -1,4 +1,6 @@
 from functools import wraps
+from matplotlib import cm
+import matplotlib.pyplot as plt
 
 
 def override(superclass):
@@ -33,7 +35,6 @@ class Scheduler:
         self.processList.append(process)
 
     def increaseUnitTime(self):
-        print("increase!")
         self.currentUnitTime += 1
 
     # Check if the new process has arrived every unit time.
@@ -47,38 +48,95 @@ class Scheduler:
                 self.readyQueue.append(newProcess)
                 # self.processList.remove(newProcess)
 
+    def displayGanttChart(self):
+
+        # Colors list for dipslaying unique colors of each process.
+        colors = cm.get_cmap('tab10', len(self.terminatedQueue)).colors
+
+        fig, ax = plt.subplots()
+        yrange = 0
+
+        for process in self.terminatedQueue:
+            ax.broken_barh(xranges=process.executedTimeSection, yrange=(yrange+0.1, 0.8),
+                           facecolors=(colors[yrange]))
+            yrange += 1
+
+        ax.set_xlim(0, self.currentUnitTime)
+        ax.set_ylim(0, len(self.terminatedQueue))
+
+        yticks = [0.5 + i for i in range(len(self.terminatedQueue))]
+        yticksLabels = []
+        for index in range(len(self.terminatedQueue)):
+            processName = "Process " + str(index)
+            yticksLabels.append(processName)
+
+        ax.set_xticks(range((self.currentUnitTime)+1))
+        ax.set_yticks(yticks, yticksLabels)
+
+        ax.set_xlabel('Timeline')
+        ax.set_ylabel('Processes')
+
+        ax.set_title('Gantt Chart: Task Execution')
+        ax.grid(True)
+
+        # plt.legend()
+        # plt.grid(axis='x')
+        # plt.tight_layout()
+        plt.show()
+
     def printEvaulation(self):
 
-        print("##### Evaulation of Scheduling... #####")
-        print("Total unitTime : ", self.currentUnitTime)
-        print("Process List : ", end='')
-        for process in self.terminatedQueue:
-            print("%d " % process.burstTime, end='')
-        print('\n\n')
+        print("\n")
+        print("### Evaulation of Scheduling... ###")
+        print("\n")
 
+        ### Total Executing Time ###
+        print("- Total Executing Time")
+        print(self.currentUnitTime)
+        print("\n")
+        ########################################################################
+
+        ### CPU Utilization ###
         totalRunningTime = 0
         for process in self.terminatedQueue:
             totalRunningTime += process.runningTime
-        print("CPU utilization : ", totalRunningTime/self.currentUnitTime)
+        print("- CPU utilization")
+        print(totalRunningTime/self.currentUnitTime)
+        print("\n")
+        ########################################################################
 
-        print("Throughput : ", len(self.terminatedQueue)/self.currentUnitTime)
+        ### Throughput ###
+        print("- Throughput")
+        print(len(self.terminatedQueue)/self.currentUnitTime)
+        print("\n")
+        ########################################################################
 
-        print("Turnaround Time : [", end=' ')
+        ### Turnaround Time ###
+        count = 1
+        print("- Turnaround Time")
         for process in self.terminatedQueue:
-            print("%d " % process.turnAroundTime, end=' ')
-        print("]")
+            print("Process %d : %d " % (count, process.turnAroundTime))
+            count += 1
+        print("\n")
+        ########################################################################
 
-        print("Waiting Time : [", end=' ')
-
+        ### Waiting Time ###
+        count = 1
+        print("- Waiting Time")
         for process in self.terminatedQueue:
-            print("%d " % process.waitingTime, end=' ')
-        print("]")
+            print("Process %d : %d " % (count, process.waitingTime))
+            count += 1
+        print("\n")
+        ########################################################################
 
-        print("Response Time : [", end=' ')
-
+        ### Response Time ###
+        count = 1
+        print("- Response Time")
         for process in self.terminatedQueue:
-            print("%d " % process.responseTime, end=' ')
-        print("]")
+            print("Process %d : %d " % (count, process.responseTime))
+            count += 1
+        print("\n")
+        ########################################################################
 
 
 class FCFS(Scheduler):
@@ -86,26 +144,33 @@ class FCFS(Scheduler):
     def startScheduling(self):
         # Check the process arrival before executing the scheduling.
         # current unit time is 0.
-        # I assume that at least there one process arrives at first.
-        # If not, I must use infinity loop. it's an example, so I made a rule.
+
+        ##############################################################
+        # I assume that at least there one process arrives at first. #
+        ##############################################################
+        # If not, I must use infinity loop to check the process arrival.
+        # It's an example assignment, so I made a rule.
         self.checkNewProcessArrival()
 
         # If readyQueue is not empty, keep schedule the processes.
         while (len(self.readyQueue)):
             # The process located in the first of the readyQueue begins running in CPU(scheduling).
             self.readyQueue[0].startRunning()
+            startedTime = self.currentUnitTime
 
             # Keep runs the scheduling until the job of a process is done.
+            # It'non-preemptive, so, doesn't matter when the other's arrive.
             while (self.readyQueue[0].runningTime != self.readyQueue[0].burstTime):
+
+                # plus 1 to the unitTime.
+                # unitTime presents the total running time to date.
+                self.increaseUnitTime()
+
                 for process in self.readyQueue:
                     process.runningTick()
 
                     if (process.isRunning == False):
                         process.waitingTick()
-
-                # plus 1 to the unitTime.
-                # unitTime presents the totla running time to date.
-                self.increaseUnitTime()
 
                 # UnitTime is increased, so check the new arrival of process again.
                 # Checking for new process arrivals must be executed here,
@@ -114,7 +179,8 @@ class FCFS(Scheduler):
 
             # The scheduling of a process is done.
             # Deque the process that is recently scheduled into terminated queue.
-            self.readyQueue[0].stopRunning()
+            self.readyQueue[0].stopRunning(
+                (startedTime, self.currentUnitTime-startedTime))
             terminatedProcess = self.readyQueue.pop(0)
             self.terminatedQueue.append(terminatedProcess)
 
