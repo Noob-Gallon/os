@@ -1,0 +1,27 @@
+[
+    {
+        "arrivalTime": 0,
+        "burstTime": 6,
+        "priority": 0
+    },
+    {
+        "arrivalTime": 1,
+        "burstTime": 8,
+        "priority": 0
+    },
+    {
+        "arrivalTime": 1,
+        "burstTime": 7,
+        "priority": 0
+    },
+    {
+        "arrivalTime": 3,
+        "burstTime": 3,
+        "priority": 0
+    },
+    {
+        "arrivalTime": 3,
+        "burstTime": 4,
+        "priority": 0
+    }
+]

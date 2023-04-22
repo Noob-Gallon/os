@@ -22,22 +22,22 @@ psjf = PSJF()
 # 이 때문에 process에 대하여 처리해주는 것이
 # 겹치게 되어 동작에 오류가 발생하는 것으로 생각됨.
 p = []
-p.append(Process(7, 0))
-p.append(Process(2, 1))
-p.append(Process(8, 0))
-p.append(Process(4, 2))
+p.append(Process(7, 0, 0))
+p.append(Process(2, 1, 0))
+p.append(Process(8, 0, 0))
+p.append(Process(4, 2, 0))
 
 p2 = []
-p2.append(Process(7, 0))
-p2.append(Process(2, 1))
-p2.append(Process(8, 0))
-p2.append(Process(4, 2))
+p2.append(Process(7, 0, 0))
+p2.append(Process(2, 1, 0))
+p2.append(Process(8, 0, 0))
+p2.append(Process(4, 2, 0))
 
 p3 = []
-p3.append(Process(7, 0))
-p3.append(Process(2, 1))
-p3.append(Process(8, 0))
-p3.append(Process(4, 2))
+p3.append(Process(7, 0, 0))
+p3.append(Process(2, 1, 0))
+p3.append(Process(8, 0, 0))
+p3.append(Process(4, 2, 0))
 
 # First, Insert the processes inforamtion in the scheduler.
 # Check the arrival of the process every unit time.
