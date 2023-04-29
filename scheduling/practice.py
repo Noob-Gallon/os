@@ -10,6 +10,7 @@ from classes.Scheduler import PPriority
 from classes.Scheduler import RoundRobin
 # from classes.Scheduler import PriorityRoundRobin
 from classes.Scheduler import MultiQueue
+from classes.Scheduler import MultiLevelFeedbackQueue
 
 ##################################################################
 ###                        execution                           ###
@@ -27,6 +28,7 @@ ppriority = PPriority()
 roundRobin = RoundRobin()
 # priorityRoundRobin = PriorityRoundRobin()
 multiQueue = MultiQueue()
+multiLevelFeedbackQueue = MultiLevelFeedbackQueue()
 
 # p = []
 # p.append(Process(6, 0, 0))
@@ -92,14 +94,14 @@ multiQueue = MultiQueue()
 # # roundRobin.printEvaulation()
 # roundRobin.displayGanttChart()
 
-# priorityRoundRobin.addProcesses()
-# priorityRoundRobin.startScheduling(typeObject={'type': 9})
-# # priorityRoundRobin.printEvaulation()
-# priorityRoundRobin.displayGanttChart()
-
 multiQueue.addProcesses()
-multiQueue.startScheduling(typeObject={'type': 10})
+multiQueue.startScheduling(typeObject={'type': 9})
 # priorityRoundRobin.printEvaulation()
 multiQueue.displayGanttChart()
+
+# multiLevelFeedbackQueue.addProcesses()
+# multiLevelFeedbackQueue.startScheduling(typeObject={'type': 10})
+# # priorityRoundRobin.printEvaulation()
+# multiLevelFeedbackQueue.displayGanttChart()
 
 # %%
