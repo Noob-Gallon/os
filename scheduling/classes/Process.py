@@ -3,10 +3,11 @@ class Process:
     # Process that will be scheduled.
     # It contains the process scheduling information.
 
-    def __init__(self, burstTime, arrivalTime, priority):
+    def __init__(self, burstTime, arrivalTime, priority, processName):
         self.burstTime = burstTime
         self.arrivalTime = arrivalTime
         self.priority = priority
+        self.processName = processName
 
         self.executedTimeSection = []
 
@@ -14,6 +15,9 @@ class Process:
         self.waitingTime = 0
         self.responseTime = 0
         self.turnAroundTime = 0
+
+        # For Priority Round Robin Flag.
+        self.alreadyExecuted = False
 
         self.isRunning = False
         self.isTerminated = False
@@ -35,15 +39,17 @@ class Process:
     # Make this process to be executed on CPU.
     # Note that he calculating manner of responseTime could be changed
     # for preemptive scheduling algorithms.
-    def startProcess(self):
+    def startProcessRunning(self):
         if (self.isRunning == True):
             return
 
         self.isRunning = True
-        self.responseTime = self.waitingTime
+
+        if (self.responseTime == 0):
+            self.responseTime = self.waitingTime
 
     # Stop
-    def pauseProcess(self, timeSection):
+    def pauseProcessRunning(self, timeSection):
         if (self.isRunning == False):
             return
 

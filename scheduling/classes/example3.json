@@ -1,26 +1,31 @@
 [
     {
+        "processName": "Process 1",
         "arrivalTime": 0,
         "burstTime": 6,
         "priority": 0
     },
     {
-        "arrivalTime": 1,
+        "processName": "Process 2",
+        "arrivalTime": 0,
         "burstTime": 8,
         "priority": 0
     },
     {
-        "arrivalTime": 1,
+        "processName": "Process 3",
+        "arrivalTime": 0,
         "burstTime": 7,
         "priority": 0
     },
     {
-        "arrivalTime": 3,
+        "processName": "Process 4",
+        "arrivalTime": 0,
         "burstTime": 3,
         "priority": 0
     },
     {
-        "arrivalTime": 3,
+        "processName": "Process 5",
+        "arrivalTime": 0,
         "burstTime": 4,
         "priority": 0
     }

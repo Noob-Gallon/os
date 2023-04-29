@@ -1,27 +1,32 @@
 [
     {
-        "arrivalTime": 10,
+        "processName": "Process 1",
+        "arrivalTime": 0,
+        "burstTime": 8,
+        "priority": 2
+    },
+    {
+        "processName": "Process 2",
+        "arrivalTime": 0,
         "burstTime": 6,
         "priority": 0
     },
     {
-        "arrivalTime": 30,
-        "burstTime": 8,
-        "priority": 0
-    },
-    {
-        "arrivalTime": 1,
-        "burstTime": 7,
-        "priority": 0
-    },
-    {
+        "processName": "Process 3",
         "arrivalTime": 3,
+        "burstTime": 5,
+        "priority": 1
+    },
+    {
+        "processName": "Process 4",
+        "arrivalTime": 10,
+        "burstTime": 5,
+        "priority": 1
+    },
+    {
+        "processName": "Process 5",
+        "arrivalTime": 15,
         "burstTime": 3,
-        "priority": 0
-    },
-    {
-        "arrivalTime": 3,
-        "burstTime": 4,
-        "priority": 0
+        "priority": 3
     }
 ]
